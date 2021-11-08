@@ -3,6 +3,13 @@ from urllib import request
 from urllib.request import Request, urlopen
 import ssl
 
+
+def convertir_ratio(string):
+    """convierte el ratio de una string a:b a un float a/b"""
+    [a, b] = string.split(":")
+    return float(a) / float(b)
+
+
 ## Parseo de wikipedia. Tickers, Empresas, Sectores, reports.
 ## Parseo de slickcharts. Componentes.
 
@@ -58,6 +65,10 @@ def parsing_cedears():
     ##correcciones a los datos
     # ticker BRK/B --> BRK.B
     data = data.rename(index={"BRK/B": "BRK.B"})
+
+    # convertir Ratio de una string a un float
+    data["Ratio"] = data["Ratio"].apply(convertir_ratio)
+
     return data
 
 
@@ -86,7 +97,9 @@ def main_data():
 
     ##correcciones a los datos
     # Ignorar sector real estate (no hay cedears disponibles para REITS)
+    # Ignorar utilities (no hay cedears disponibles)
     new = new[new["GICS Sector"] != "Real Estate"]
+    new = new[new["GICS Sector"] != "Utilities"]
 
     # mergear 2 tipos de acciones de google GOOGL -> GOOG+GOOGL
     new.loc["GOOGL", "Weight"] = new.loc["GOOG", "Weight"] + new.loc["GOOGL", "Weight"]
@@ -99,7 +112,7 @@ if __name__ == "__main__":
     # datos
     data = main_data()
     data_c = parsing_cedears()
-    target_weight_by_sector = data.groupby(["GICS Sector"]).sum(["Weight"])
+    target_weight_by_sector = data.groupby(["GICS Sector"]).sum(["Weight"])["Weight"]
     # guardar datos
     data.to_pickle("data/data_US.pkl")
     data_c.to_pickle("data/data_ARG.pkl")
