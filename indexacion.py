@@ -15,3 +15,6 @@ factor = (100 / target_by_sector.sum()) * target_by_sector / current_by_sector
 
 for sector, factor_value in factor.iteritems():
     data.loc[data["GICS Sector"] == sector, ["Weight"]] *= factor_value
+
+# test
+
