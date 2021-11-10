@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from parsing import add_current_price
 
 # datos
 data_arg = pd.read_pickle("data/data_ARG.pkl")
@@ -12,3 +13,6 @@ data = pd.merge(data_us, data_arg, left_index=True, right_index=True)
 # activos faltantes en la interseccion
 faltantes = data_us[~data_us.index.isin(data.index)]
 # Todo ok! los faltantes no tienen cedear.
+
+# testeando precios.
+test = add_current_price(data)

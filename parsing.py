@@ -1,4 +1,5 @@
 import pandas as pd
+import yfinance as yf
 from urllib import request
 from urllib.request import Request, urlopen
 import ssl
@@ -63,8 +64,8 @@ def parsing_cedears():
     # setear index a ticker
     data = data.set_index("Symbol")
     ##correcciones a los datos
-    # ticker BRK/B --> BRK.B
-    data = data.rename(index={"BRK/B": "BRK.B"})
+    # ticker BRK/B --> BRK-B
+    data = data.rename(index={"BRK/B": "BRK-B"})
 
     # convertir Ratio de una string a un float
     data["Ratio"] = data["Ratio"].apply(convertir_ratio)
@@ -101,6 +102,9 @@ def main_data():
     new = new[new["GICS Sector"] != "Real Estate"]
     new = new[new["GICS Sector"] != "Utilities"]
 
+    # ticker de berkshire (para yfinance) BRK/B --> BRK-B
+    new = new.rename(index={"BRK.B": "BRK-B"})
+
     # mergear 2 tipos de acciones de google GOOGL -> GOOG+GOOGL
     new.loc["GOOGL", "Weight"] = new.loc["GOOG", "Weight"] + new.loc["GOOGL", "Weight"]
     new = new.drop("GOOG")
@@ -108,11 +112,24 @@ def main_data():
     return new
 
 
+def add_current_price(dataframe):
+    """agrega columna al dataframe con el ultimo precio de cierre"""
+    tickers = dataframe.index.to_list()
+
+    price_data = yf.Tickers(tickers).download(period="1d", threads=True)
+    price_data.index = ["Price"]  # cambio fecha actual a precio
+
+    # agrego la columna de precios (transponiendo el dataframe)
+    return pd.merge(dataframe, price_data["Close"].T, left_index=True, right_index=True)
+
+
 if __name__ == "__main__":
+    # Parseo a disco para evitar demoras de multiples http requests
     # datos
     data = main_data()
     data_c = parsing_cedears()
     target_weight_by_sector = data.groupby(["GICS Sector"]).sum(["Weight"])["Weight"]
+
     # guardar datos
     data.to_pickle("data/data_US.pkl")
     data_c.to_pickle("data/data_ARG.pkl")
