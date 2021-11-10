@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from parsing import add_current_price
 
 # datos
 data_arg = pd.read_pickle("data/data_ARG.pkl")
@@ -16,5 +17,6 @@ factor = (100 / target_by_sector.sum()) * target_by_sector / current_by_sector
 for sector, factor_value in factor.iteritems():
     data.loc[data["GICS Sector"] == sector, ["Weight"]] *= factor_value
 
-# test
-
+# Agregar columna de ultimo precio de cierre
+# data = add_current_price(data)  #guardo en disco para evitar perder tiempo descargando datos
+data = pd.read_pickle("data/data_with_price.pkl")
