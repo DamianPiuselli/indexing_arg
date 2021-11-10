@@ -26,12 +26,12 @@ data["Precio por CEDEAR"] = data["Price"] / data["Ratio"]
 
 def portafolio(data, monto=5000):
     # distribucion target de capital
-    data["CEDEARs"] = (data["Weight"] * monto) / (100 * data["Precio por CEDEAR"])
+    data["TARGET"] = (data["Weight"] * monto) / (100 * data["Precio por CEDEAR"])
 
     # trackeo partes enteras y fraccionales
-    data["comprado"] = data["CEDEARs"] // 1
-    data["restante"] = data["CEDEARs"] % 1
-    capital_alocado = (data["comprado"] * data["Precio por CEDEAR"]).sum()
+    data["Portafolio"] = data["TARGET"] // 1
+    data["FRACCION"] = data["TARGET"] % 1
+    capital_alocado = (data["Portafolio"] * data["Precio por CEDEAR"]).sum()
     capital_disponible = monto - capital_alocado
 
     # Proceso iterativo para eliminar las partes fraccionales
@@ -40,9 +40,11 @@ def portafolio(data, monto=5000):
             break
         else:
             posibles = data[data["Precio por CEDEAR"] < capital_disponible]
-            eleccion = posibles[posibles["restante"] == posibles["restante"].max()]
-            data.loc[eleccion.index, ["comprado"]] += 1
-            data.loc[eleccion.index, ["restante"]] = 0
-            capital_alocado = (data["comprado"] * data["Precio por CEDEAR"]).sum()
+            eleccion = posibles[posibles["FRACCION"] == posibles["FRACCION"].max()]
+            data.loc[eleccion.index, ["Portafolio"]] += 1
+            data.loc[eleccion.index, ["FRACCION"]] = 0
+            capital_alocado = (data["Portafolio"] * data["Precio por CEDEAR"]).sum()
             capital_disponible = monto - capital_alocado
+    # borro columnas innecesarias
+    data = data.drop(columns=["TARGET", "FRACCION"])
     return data
