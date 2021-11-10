@@ -24,7 +24,7 @@ data = pd.read_pickle("data/data_with_price.pkl")
 data["Precio por CEDEAR"] = data["Price"] / data["Ratio"]
 
 
-def portafolio(data, monto=5000):
+def portafolio(data, monto):
     # distribucion target de capital
     data["TARGET"] = (data["Weight"] * monto) / (100 * data["Precio por CEDEAR"])
 
@@ -48,3 +48,9 @@ def portafolio(data, monto=5000):
     # borro columnas innecesarias
     data = data.drop(columns=["TARGET", "FRACCION"])
     return data
+
+
+if __name__ == "__main__":
+    # portafolio ejemplo.
+    portafolio_test = portafolio(data, 6000)
+    print(portafolio_test)
