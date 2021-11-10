@@ -26,6 +26,7 @@ data["Precio por CEDEAR"] = data["Price"] / data["Ratio"]
 
 def portafolio(data, monto):
     # distribucion target de capital
+    data = data.copy()
     data["TARGET"] = (data["Weight"] * monto) / (100 * data["Precio por CEDEAR"])
 
     # trackeo partes enteras y fraccionales
@@ -52,5 +53,5 @@ def portafolio(data, monto):
 
 if __name__ == "__main__":
     # portafolio ejemplo.
-    portafolio_test = portafolio(data, 6000)
+    portafolio_test = portafolio(data, 1000)
     print(portafolio_test)
