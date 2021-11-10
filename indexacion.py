@@ -20,3 +20,29 @@ for sector, factor_value in factor.iteritems():
 # Agregar columna de ultimo precio de cierre
 # data = add_current_price(data)  #guardo en disco para evitar perder tiempo descargando datos
 data = pd.read_pickle("data/data_with_price.pkl")
+# Agrego precio por cedear en usd
+data["Precio por CEDEAR"] = data["Price"] / data["Ratio"]
+
+
+def portafolio(data, monto=5000):
+    # distribucion target de capital
+    data["CEDEARs"] = (data["Weight"] * monto) / (100 * data["Precio por CEDEAR"])
+
+    # trackeo partes enteras y fraccionales
+    data["comprado"] = data["CEDEARs"] // 1
+    data["restante"] = data["CEDEARs"] % 1
+    capital_alocado = (data["comprado"] * data["Precio por CEDEAR"]).sum()
+    capital_disponible = monto - capital_alocado
+
+    # Proceso iterativo para eliminar las partes fraccionales
+    while True:
+        if capital_disponible < data["Precio por CEDEAR"].min():
+            break
+        else:
+            posibles = data[data["Precio por CEDEAR"] < capital_disponible]
+            eleccion = posibles[posibles["restante"] == posibles["restante"].max()]
+            data.loc[eleccion.index, ["comprado"]] += 1
+            data.loc[eleccion.index, ["restante"]] = 0
+            capital_alocado = (data["comprado"] * data["Precio por CEDEAR"]).sum()
+            capital_disponible = monto - capital_alocado
+    return data
