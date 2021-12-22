@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from parsing import add_current_price
+from parsing import add_current_price, add_prices
 
 # datos
 data_arg = pd.read_pickle("data/data_ARG.pkl")
@@ -53,5 +53,6 @@ def portafolio(data, monto):
 
 if __name__ == "__main__":
     # portafolio ejemplo.
-    portafolio_test = portafolio(data, 1000)
-    print(portafolio_test)
+    portafolio_test = portafolio(data, 1500)
+    # print(portafolio_test[portafolio_test["Portafolio"] > 0])
+

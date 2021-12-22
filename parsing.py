@@ -27,8 +27,7 @@ def parsing_wikipedia():
 def parsing_slickcharts():
     # leer contenido https, con crawler bloqueado. Emular browser.
     req = Request(
-        "https://www.slickcharts.com/sp500",
-        headers={"User-Agent": "Mozilla/5.0"},
+        "https://www.slickcharts.com/sp500", headers={"User-Agent": "Mozilla/5.0"},
     )
     webpage = urlopen(req).read()
     return pd.read_html(webpage)[0]
@@ -121,6 +120,14 @@ def add_current_price(dataframe):
 
     # agrego la columna de precios (transponiendo el dataframe)
     return pd.merge(dataframe, price_data["Close"].T, left_index=True, right_index=True)
+
+
+def add_prices(dataframe):
+    """agrega columna al dataframe con los precios de cierre del ultimo año"""
+    tickers = dataframe.index.to_list()
+
+    price_data = yf.Tickers(tickers).download(period="1y", threads=True)
+    return price_data
 
 
 if __name__ == "__main__":
