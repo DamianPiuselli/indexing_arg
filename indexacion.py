@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from parsing import add_current_price, add_prices
+import matplotlib.pyplot as plt
+from parsing import add_current_price, ytd_prices
 
 # datos
 data_arg = pd.read_pickle("data/data_ARG.pkl")
@@ -51,8 +52,32 @@ def portafolio(data, monto):
     return data
 
 
+def portafolio_vs_index(portafolio):
+    ytd_data = ytd_prices(portafolio)
+    prices = pd.DataFrame()
+
+    for ticker in ytd_data:
+        try:
+            prices[ticker] = (
+                ytd_data[ticker]
+                * portafolio["Portafolio"][ticker]
+                / portafolio["Ratio"][ticker]
+            )
+        except KeyError:
+            print(f"{ticker} no existe en el portafolio, ignorando")
+
+    prices_series = prices.sum(axis=1)
+    # ploteo el valor del portafolio vs spy
+
+    plt.plot(prices_series / prices_series.iloc[0], label="Portafolio")
+    plt.plot(ytd_data["SPY"] / ytd_data["SPY"].iloc[0], label="Index")
+    plt.legend()
+    plt.show()
+
+
 if __name__ == "__main__":
     # portafolio ejemplo.
-    portafolio_test = portafolio(data, 1500)
-    # print(portafolio_test[portafolio_test["Portafolio"] > 0])
+    test = portafolio(data, 1000)
+    portafolio_vs_index(test)
+    # print(test[portafolio_test["Portafolio"] > 0])
 
